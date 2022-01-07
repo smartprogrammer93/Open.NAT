@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -27,63 +27,50 @@
 using System;
 using System.Diagnostics;
 
-namespace Open.Nat.ConsoleTest
+namespace Open.Nat.ConsoleTest;
+
+public class ColorConsoleTraceListener : TraceListener
 {
-	public class ColorConsoleTraceListener : TraceListener
+	private static readonly object Sync = new();
+
+	public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string message)
 	{
-		private static object _sync = new object();
+		TraceEvent(eventCache, source, eventType, id, message, Array.Empty<object>());
+	}
 
-		public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string message)
+	public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, params object[] args)
+	{
+		lock (Sync)
 		{
-			TraceEvent(eventCache, source, eventType, id, message, new object[0]);
-		}
-
-		public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, params object[] args)
-		{
-			lock (_sync)
+			if (Filter?.ShouldTrace(eventCache, source, eventType, id, format, args, null, null) == false) return;
+			var color = eventType switch
 			{
-				if(Filter != null && !Filter.ShouldTrace(eventCache, source, eventType, id, format, args, null, null)) return;
-				ConsoleColor color;
-				switch (eventType)
-				{
-					case TraceEventType.Error:
-						color = ConsoleColor.Red;
-						break;
-					case TraceEventType.Warning:
-						color = ConsoleColor.Yellow;
-						break;
-					case TraceEventType.Information:
-						color = ConsoleColor.Green;
-						break;
-					case TraceEventType.Verbose:
-						color = ConsoleColor.DarkCyan;
-						break;
-					default:
-						color = ConsoleColor.Gray;
-						break;
-				}
+				TraceEventType.Error => ConsoleColor.Red,
+				TraceEventType.Warning => ConsoleColor.Yellow,
+				TraceEventType.Information => ConsoleColor.Green,
+				TraceEventType.Verbose => ConsoleColor.DarkCyan,
+				_ => ConsoleColor.Gray,
+			};
+			var eventTypeString = Enum.GetName(typeof(TraceEventType), eventType);
+			var message = source + " - " + eventTypeString + " > " + (args.Length > 0 ? string.Format(format, args) : format);
 
-				var eventTypeString = Enum.GetName(typeof (TraceEventType), eventType);
-					var message = source + " - " + eventTypeString + " > " + (args.Length > 0 ? string.Format(format, args): format);
+			WriteColor(message + Environment.NewLine, color);
+		}
+	}
 
-				WriteColor(message + Environment.NewLine, color);
-			}
-		}
- 
-		public override void Write(string message)
-		{
-			WriteColor(message, ConsoleColor.Gray);
-		}
-		public override void WriteLine(string message)
-		{
-			WriteColor(message + Environment.NewLine, ConsoleColor.Gray);
-		}
- 
-		private static void WriteColor(string message, ConsoleColor color)
-		{
-			Console.ForegroundColor = color;
-			Console.Write(message);
-			Console.ForegroundColor = ConsoleColor.Gray;
-		}
+	public override void Write(string message)
+	{
+		WriteColor(message, ConsoleColor.Gray);
+	}
+	public override void WriteLine(string message)
+	{
+		WriteColor(message + Environment.NewLine, ConsoleColor.Gray);
+	}
+
+	private static void WriteColor(string message, ConsoleColor color)
+	{
+		Console.ForegroundColor = color;
+		Console.Write(message);
+		Console.ForegroundColor = ConsoleColor.Gray;
 	}
 }

@@ -1,6 +1,6 @@
 ﻿//
 // Authors:
-//   Lucas Ontivero lucasontivero@gmail.com 
+//   Lucas Ontivero lucasontivero@gmail.com
 //
 // Copyright (C) 2014 Lucas Ontivero
 //
@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -31,40 +31,31 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
-namespace Open.Nat
+namespace Open.Nat;
+
+internal class IPAddressesProvider : IIPAddressesProvider
 {
-	internal class IPAddressesProvider : IIPAddressesProvider
-	{
-		#region IIPAddressesProvider Members
+	#region IIPAddressesProvider Members
 
-		public IEnumerable<IPAddress> UnicastAddresses()
-		{
-			return IPAddresses(p => p.UnicastAddresses.Select(x => x.Address));
-		}
+	public IEnumerable<IPAddress> UnicastAddresses() =>
+		IPAddresses(p => p.UnicastAddresses.Select(x => x.Address));
 
-		public IEnumerable<IPAddress> DnsAddresses()
-		{
-			return IPAddresses(p => p.DnsAddresses);
-		}
+	public IEnumerable<IPAddress> DnsAddresses() =>
+		IPAddresses(p => p.DnsAddresses);
 
-		public IEnumerable<IPAddress> GatewayAddresses()
-		{
-			return IPAddresses(p => p.GatewayAddresses.Select(x => x.Address));
-		}
+	public IEnumerable<IPAddress> GatewayAddresses() =>
+		IPAddresses(p => p.GatewayAddresses.Select(x => x.Address));
 
-		#endregion
+	#endregion
 
-		private static IEnumerable<IPAddress> IPAddresses(Func<IPInterfaceProperties, IEnumerable<IPAddress>> ipExtractor)
-		{
-			return from networkInterface in NetworkInterface.GetAllNetworkInterfaces()
-				   where
-					   networkInterface.OperationalStatus == OperationalStatus.Up ||
-					   networkInterface.OperationalStatus == OperationalStatus.Unknown
-				   let properties = networkInterface.GetIPProperties()
-				   from address in ipExtractor(properties)
-				   where address.AddressFamily == AddressFamily.InterNetwork 
-				      || address.AddressFamily == AddressFamily.InterNetworkV6
-				   select address;
-		}
-	}
+	private static IEnumerable<IPAddress> IPAddresses(Func<IPInterfaceProperties, IEnumerable<IPAddress>> ipExtractor) =>
+		from networkInterface in NetworkInterface.GetAllNetworkInterfaces()
+		where
+			networkInterface.OperationalStatus == OperationalStatus.Up ||
+			networkInterface.OperationalStatus == OperationalStatus.Unknown
+		let properties = networkInterface.GetIPProperties()
+		from address in ipExtractor(properties)
+		where address.AddressFamily == AddressFamily.InterNetwork
+			|| address.AddressFamily == AddressFamily.InterNetworkV6
+		select address;
 }

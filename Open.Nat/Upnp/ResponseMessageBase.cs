@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -27,32 +27,30 @@
 using System;
 using System.Xml;
 
-namespace Open.Nat
+namespace Open.Nat;
+
+internal abstract class ResponseMessageBase
 {
-	internal abstract class ResponseMessageBase
+	private readonly XmlDocument _document;
+	private readonly string _typeName;
+	protected string ServiceType { get; }
+
+	protected ResponseMessageBase(XmlDocument response, string serviceType, string typeName)
 	{
-		private readonly XmlDocument _document;
-		protected string ServiceType;
-		private readonly string _typeName;
+		_document = response;
+		_typeName = typeName;
+		ServiceType = serviceType;
+	}
 
-		protected ResponseMessageBase(XmlDocument response, string serviceType, string typeName)
-		{
-			_document = response;
-			ServiceType = serviceType;
-			_typeName = typeName;
-		}
+	protected XmlNode GetNode()
+	{
+		var nsm = new XmlNamespaceManager(_document.NameTable);
+		nsm.AddNamespace("responseNs", ServiceType);
 
-		protected XmlNode GetNode()
-		{
-			var nsm = new XmlNamespaceManager(_document.NameTable);
-			nsm.AddNamespace("responseNs", ServiceType);
+		string messageName = _typeName.Substring(0, _typeName.Length - "Message".Length);
+		XmlNode node = _document.SelectSingleNode($"//responseNs:{messageName}", nsm);
+		if (node == null) throw new InvalidOperationException($"The response is invalid: {messageName}");
 
-			string typeName = _typeName;
-			string messageName = typeName.Substring(0, typeName.Length - "Message".Length);
-			XmlNode node = _document.SelectSingleNode("//responseNs:" + messageName, nsm);
-			if (node == null) throw new InvalidOperationException("The response is invalid: " + messageName);
-
-			return node;
-		}
+		return node;
 	}
 }

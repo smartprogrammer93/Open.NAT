@@ -13,10 +13,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -29,20 +29,18 @@
 using System.Net;
 using System.Xml;
 
-namespace Open.Nat
+namespace Open.Nat;
+
+internal class GetExternalIPAddressResponseMessage : ResponseMessageBase
 {
-    internal class GetExternalIPAddressResponseMessage : ResponseMessageBase
-    {
-        public GetExternalIPAddressResponseMessage(XmlDocument response, string serviceType)
-            : base(response, serviceType, "GetExternalIPAddressResponseMessage")
-        {
-            string ip = GetNode().GetXmlElementText("NewExternalIPAddress");
+	public GetExternalIPAddressResponseMessage(XmlDocument response, string serviceType)
+		: base(response, serviceType, "GetExternalIPAddressResponseMessage")
+	{
+		string ip = GetNode().GetXmlElementText("NewExternalIPAddress");
 
-            IPAddress ipAddr;
-            if (IPAddress.TryParse(ip, out ipAddr))
-                ExternalIPAddress = ipAddr;
-        }
+		if (IPAddress.TryParse(ip, out IPAddress ipAddr))
+			ExternalIPAddress = ipAddr;
+	}
 
-        public IPAddress ExternalIPAddress { get; private set; }
-    }
+	public IPAddress ExternalIPAddress { get; }
 }

@@ -13,10 +13,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -29,34 +29,33 @@
 using System.Collections.Generic;
 using System.Net;
 
-namespace Open.Nat
+namespace Open.Nat;
+
+internal class CreatePortMappingRequestMessage : IMessage
 {
-	internal class CreatePortMappingRequestMessage : RequestMessageBase
+	private readonly Mapping _mapping;
+
+	public CreatePortMappingRequestMessage(Mapping mapping)
 	{
-		private readonly Mapping _mapping;
+		_mapping = mapping;
+	}
 
-		public CreatePortMappingRequestMessage(Mapping mapping)
+	public Dictionary<string, object> ToXml()
+	{
+		string remoteHost = _mapping.PublicIP.Equals(IPAddress.None)
+								? string.Empty
+								: _mapping.PublicIP.ToString();
+
+		return new()
 		{
-			_mapping = mapping;
-		}
-
-		public override IDictionary<string, object> ToXml()
-		{
-			string remoteHost = _mapping.PublicIP.Equals(IPAddress.None)
-									? string.Empty
-									: _mapping.PublicIP.ToString();
-
-			return new Dictionary<string, object>
-					   {
-						   {"NewRemoteHost", remoteHost},
-						   {"NewExternalPort", _mapping.PublicPort},
-						   {"NewProtocol", _mapping.Protocol == Protocol.Tcp ? "TCP" : "UDP"},
-						   {"NewInternalPort", _mapping.PrivatePort},
-						   {"NewInternalClient", _mapping.PrivateIP},
-						   {"NewEnabled", 1},
-						   {"NewPortMappingDescription", _mapping.Description},
-						   {"NewLeaseDuration", _mapping.Lifetime}
-					   };
-		}
+			["NewRemoteHost"] = remoteHost,
+			["NewExternalPort"] = _mapping.PublicPort,
+			["NewProtocol"] = _mapping.Protocol == Protocol.Tcp ? "TCP" : "UDP",
+			["NewInternalPort"] = _mapping.PrivatePort,
+			["NewInternalClient"] = _mapping.PrivateIP,
+			["NewEnabled"] = 1,
+			["NewPortMappingDescription"] = _mapping.Description,
+			["NewLeaseDuration"] = _mapping.Lifetime
+		};
 	}
 }

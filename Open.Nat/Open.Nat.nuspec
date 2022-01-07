@@ -21,7 +21,6 @@
 			</releaseNotes>
 		</metadata>
 		<files>
-			<file src="bin\Release\net35\*.*" target="lib\net35" />
 			<file src="bin\Release\net45\*.*" target="lib\net45" />
 		</files>
 </package>
