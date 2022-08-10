@@ -32,5 +32,5 @@ namespace Open.Nat;
 
 internal class GetExternalIPAddressRequestMessage : IMessage
 {
-	public Dictionary<string, object> ToXml() => new()
+	public IDictionary<string, object> ToXml() => new Dictionary<string, object>();
 }

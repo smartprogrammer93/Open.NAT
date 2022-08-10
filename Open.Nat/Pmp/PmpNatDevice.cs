@@ -37,15 +37,11 @@ namespace Open.Nat;
 
 internal sealed class PmpNatDevice : NatDevice
 {
-	public override IPEndPoint HostEndPoint { get; }
-
-	public override IPAddress LocalAddress { get; }
 	private IPAddress PublicAddress { get; }
 
 	internal PmpNatDevice(IPAddress hostEndPointAddress, IPAddress localAddress, IPAddress publicAddress)
+		: base(new IPEndPoint(hostEndPointAddress, PmpConstants.ServerPort), localAddress)
 	{
-		HostEndPoint = new IPEndPoint(hostEndPointAddress, PmpConstants.ServerPort);
-		LocalAddress = localAddress;
 		PublicAddress = publicAddress;
 	}
 
@@ -81,12 +77,13 @@ internal sealed class PmpNatDevice : NatDevice
 
 	private async Task<Mapping> InternalCreatePortMapAsync(Mapping mapping, bool create)
 	{
-		var package = new List<byte>();
-
-		package.Add(PmpConstants.Version);
-		package.Add(mapping.Protocol == Protocol.Tcp ? PmpConstants.OperationCodeTcp : PmpConstants.OperationCodeUdp);
-		package.Add(0); //reserved
-		package.Add(0); //reserved
+		var package = new List<byte>
+		{
+			PmpConstants.Version,
+			mapping.Protocol == Protocol.Tcp ? PmpConstants.OperationCodeTcp : PmpConstants.OperationCodeUdp,
+			0, //reserved
+			0 //reserved
+		};
 		package.AddRange(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)mapping.PrivatePort)));
 		package.AddRange(
 			BitConverter.GetBytes(create ? IPAddress.HostToNetworkOrder((short)mapping.PublicPort) : (short)0));

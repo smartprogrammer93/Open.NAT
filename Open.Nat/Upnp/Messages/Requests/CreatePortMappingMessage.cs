@@ -40,13 +40,13 @@ internal class CreatePortMappingRequestMessage : IMessage
 		_mapping = mapping;
 	}
 
-	public Dictionary<string, object> ToXml()
+	public IDictionary<string, object> ToXml()
 	{
 		string remoteHost = _mapping.PublicIP.Equals(IPAddress.None)
 								? string.Empty
 								: _mapping.PublicIP.ToString();
 
-		return new()
+		return new Dictionary<string, object>()
 		{
 			["NewRemoteHost"] = remoteHost,
 			["NewExternalPort"] = _mapping.PublicPort,

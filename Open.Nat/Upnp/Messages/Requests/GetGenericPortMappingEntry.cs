@@ -39,9 +39,9 @@ internal class GetGenericPortMappingEntry : IMessage
 		_index = index;
 	}
 
-	public Dictionary<string, object> ToXml()
+	public IDictionary<string, object> ToXml()
 	{
-		return new ()
+		return new Dictionary<string, object>()
 		{
 			["NewPortMappingIndex"] = _index
 		};

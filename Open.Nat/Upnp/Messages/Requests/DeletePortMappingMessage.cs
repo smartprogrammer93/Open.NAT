@@ -39,9 +39,9 @@ internal class DeletePortMappingRequestMessage : IMessage
 		_mapping = mapping;
 	}
 
-	public Dictionary<string, object> ToXml()
+	public IDictionary<string, object> ToXml()
 	{
-		return new()
+		return new Dictionary<string, object>()
 		{
 			["NewRemoteHost"] = string.Empty,
 			["NewExternalPort"] = _mapping.PublicPort,

@@ -41,9 +41,9 @@ internal class GetSpecificPortMappingEntryRequestMessage : IMessage
 		_externalPort = externalPort;
 	}
 
-	public Dictionary<string, object> ToXml()
+	public IDictionary<string, object> ToXml()
 	{
-		return new ()
+		return new Dictionary<string, object>()
 		{
 			["NewRemoteHost"] = string.Empty,
 			["NewExternalPort"] = _externalPort,
