@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Net;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
-namespace Open.Nat.UnitTests
+namespace Open.Nat.UnitTests;
+
+public class UpnpNatDeviceInfoTests
 {
-	[TestClass]
-	public class UpnpNatDeviceInfoTests
+	[Fact]
+	public void TestSomething()
 	{
-		[TestMethod]
-		public void x()
-		{
-			var info = new UpnpNatDeviceInfo(IPAddress.Loopback, new Uri("http://127.0.0.1:3221"), "/control?WANIPConnection", null);
-			Assert.AreEqual("http://127.0.0.1:3221/control?WANIPConnection", info.ServiceControlUri.ToString());
-		}
+		var info = new UpnpNatDeviceInfo(IPAddress.Loopback, new Uri("http://127.0.0.1:3221"), "/control?WANIPConnection", null);
+		Assert.Equal("http://127.0.0.1:3221/control?WANIPConnection", info.ServiceControlUri.ToString());
 	}
 }

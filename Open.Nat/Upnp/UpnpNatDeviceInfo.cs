@@ -1,6 +1,6 @@
 //
 // Authors:
-//   Lucas Ontivero lucasontivero@gmail.com 
+//   Lucas Ontivero lucasontivero@gmail.com
 //
 // Copyright (C) 2014 Lucas Ontivero
 //
@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -27,34 +27,33 @@
 using System;
 using System.Net;
 
-namespace Open.Nat
+namespace Open.Nat;
+
+internal class UpnpNatDeviceInfo
 {
-	internal class UpnpNatDeviceInfo
+	public UpnpNatDeviceInfo(IPAddress localAddress, Uri locationUri, string serviceControlUrl, string serviceType)
 	{
-		public UpnpNatDeviceInfo(IPAddress localAddress, Uri locationUri, string serviceControlUrl, string serviceType)
+		LocalAddress = localAddress;
+		ServiceType = serviceType;
+		HostEndPoint = new IPEndPoint(IPAddress.Parse(locationUri.Host), locationUri.Port);
+
+		if (Uri.IsWellFormedUriString(serviceControlUrl, UriKind.Absolute))
 		{
-			LocalAddress = localAddress;
-			ServiceType = serviceType;
-			HostEndPoint = new IPEndPoint(IPAddress.Parse(locationUri.Host), locationUri.Port);
+			var u = new Uri(serviceControlUrl);
+			IPEndPoint old = HostEndPoint;
+			serviceControlUrl = u.PathAndQuery;
 
-			if (Uri.IsWellFormedUriString(serviceControlUrl, UriKind.Absolute))
-			{
-				var u = new Uri(serviceControlUrl);
-				IPEndPoint old = HostEndPoint;
-				serviceControlUrl = u.PathAndQuery;
-
-				NatDiscoverer.TraceSource.LogInfo("{0}: Absolute URI detected. Host address is now: {1}", old,
-												  HostEndPoint);
-				NatDiscoverer.TraceSource.LogInfo("{0}: New control url: {1}", HostEndPoint, serviceControlUrl);
-			}
-
-			var builder = new UriBuilder("http", locationUri.Host, locationUri.Port);
-			ServiceControlUri = new Uri(builder.Uri, serviceControlUrl); ;
+			NatDiscoverer.TraceSource.LogInfo("{0}: Absolute URI detected. Host address is now: {1}", old,
+											  HostEndPoint);
+			NatDiscoverer.TraceSource.LogInfo("{0}: New control url: {1}", HostEndPoint, serviceControlUrl);
 		}
 
-		public IPEndPoint HostEndPoint { get; private set; }
-		public IPAddress LocalAddress { get; private set; }
-		public string ServiceType { get; private set; }
-		public Uri ServiceControlUri { get; private set; }
+		var builder = new UriBuilder("http", locationUri.Host, locationUri.Port);
+		ServiceControlUri = new Uri(builder.Uri, serviceControlUrl);
 	}
+
+	public IPEndPoint HostEndPoint { get; }
+	public IPAddress LocalAddress { get; }
+	public string ServiceType { get; }
+	public Uri ServiceControlUri { get; }
 }
